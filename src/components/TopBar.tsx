@@ -8,14 +8,17 @@ interface Props {
   onRun: () => void
   onPause: () => void
   onReset: () => void
+  speed: 'Slow' | 'Normal' | 'Fast'
+  onSpeed: (s: 'Slow' | 'Normal' | 'Fast') => void
+  onResetView: () => void
 }
 
-export default function TopBar({ config, setConfig, running, onRun, onPause, onReset }: Props) {
+export default function TopBar({ config, setConfig, running, onRun, onPause, onReset, speed, onSpeed, onResetView }: Props) {
   return (
     <div className="topbar">
       <span className="heading">Controls</span>
       <div className="row">
-        <label>n</label>
+        <label>Items</label>
         <input
           type="range"
           min={5}
@@ -33,9 +36,18 @@ export default function TopBar({ config, setConfig, running, onRun, onPause, onR
         >
           <option>Random</option>
           <option>Sorted</option>
-          <option>Reversed</option>
+          <option>Reverse</option>
         </select>
       </div>
+      <div className="row">
+        <label>Speed</label>
+        <select value={speed} onChange={(e) => onSpeed(e.target.value as Props['speed'])}>
+          <option>Slow</option>
+          <option>Normal</option>
+          <option>Fast</option>
+        </select>
+      </div>
+      <button onClick={onResetView}>Reset View</button>
       <div className="spacer" />
       {!running ? (
         <button className="primary" onClick={onRun}>Run</button>
@@ -46,4 +58,3 @@ export default function TopBar({ config, setConfig, running, onRun, onPause, onR
     </div>
   )
 }
-

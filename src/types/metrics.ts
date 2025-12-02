@@ -13,7 +13,7 @@ export interface AlgorithmMetadata {
 
 export interface RunConfig {
   n: number
-  input: 'Random' | 'Sorted' | 'Reversed'
+  input: 'Random' | 'Sorted' | 'Reverse'
 }
 
 export interface TraceStep {

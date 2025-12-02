@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react'
-import { Canvas, useFrame } from '@react-three/fiber'
+import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { OrbitControls, Grid, Html, MeshDistortMaterial } from '@react-three/drei'
 import { RunResult } from '@/types/metrics'
 import type { DSAction, DSMetrics } from '@/types/ds'
@@ -25,7 +25,7 @@ function Bars({ array, active, stepType, onHover, hoveredIndex }: { array: numbe
             <boxGeometry args={[0.5, h, 0.5]} />
             <meshStandardMaterial color={color} metalness={0.2} roughness={0.4} />
             {hoveredIndex === i && (
-              <Html center style={{ pointerEvents: 'none' }}>
+              <Html center position={[0, -0.625, 0]} style={{ pointerEvents: 'none' }}>
                 <div className="tooltip tooltip-lg tooltip-below">
                   <div className="tooltip-title">Array Element</div>
                   <div><strong>Index:</strong> {i}</div>
@@ -48,31 +48,6 @@ function stepsToHeight(steps: number) {
   return 0.2 + Math.min(normalized, 12)
 }
 
-function PerformanceGlyphs({ steps, memory }: { steps: number; memory: number }) {
-  // Map steps -> height, memory -> radius
-  const height = stepsToHeight(steps)
-  const radius = Math.min(memory / 800, 1.2) + 0.2
-  const color = steps < 1000 ? '#6bff95' : steps < 5000 ? '#ffd166' : '#ff6b6b'
-  const [hover, setHover] = useState(false)
-  return (
-    <group position={[6, 0, 0]} onPointerOver={() => setHover(true)} onPointerOut={() => setHover(false)}>
-      <mesh position={[0, height / 2, 0]} rotation={[0, 0.4, 0]}>
-        <cylinderGeometry args={[radius, radius, height, 24]} />
-        <meshStandardMaterial color={color} metalness={0.1} roughness={0.5} />
-      </mesh>
-      {hover && (
-        <Html center style={{ pointerEvents: 'none' }}>
-          <div className="tooltip tooltip-lg tooltip-below">
-            <div className="tooltip-title">Live Run Metrics</div>
-            <div>Operations: {steps}</div>
-            <div>Memory (approx): {memory} B</div>
-            <div>Visual: height ∝ steps; radius ∝ memory</div>
-          </div>
-        </Html>
-      )}
-    </group>
-  )
-}
 
 // static group (no rotation) for performance glyphs
 
@@ -86,9 +61,10 @@ interface Props {
   dsAction?: { action: DSAction; nonce: number }
   onDSStep?: (tag?: string) => void
   dsMetrics?: DSMetrics
+  resetViewNonce?: number
 }
 
-export default function Viewport({ run, stepIndex, algoId, n, tab, dsId, dsAction, onDSStep, dsMetrics }: Props) {
+export default function Viewport({ run, stepIndex, algoId, n, tab, dsId, dsAction, onDSStep, dsMetrics, resetViewNonce }: Props) {
   const [hovered, setHovered] = useState<string | null>(null)
   const [hoveredBar, setHoveredBar] = useState<number | null>(null)
   const array = run?.trace[stepIndex]?.array ?? (run ? run.trace[run.trace.length - 1]?.array : []) ?? []
@@ -112,21 +88,30 @@ export default function Viewport({ run, stepIndex, algoId, n, tab, dsId, dsActio
         ) : (
           <>
             <Bars array={array} active={active} stepType={stepType} onHover={setHoveredBar} hoveredIndex={hoveredBar} />
-            <PerformanceGlyphs steps={run?.metrics.steps ?? 0} memory={run?.metrics.memoryBytes ?? 0} />
           </>
         )}
         {algoId && n && tab !== 'Data Structures' ? (
-          <group position={[10, 0, 0]}>
+          (() => {
+            const width = 0.6
+            const span = array.length * width
+            const baseX = span / 2 + 6.5
+            return (
+              <group position={[baseX, 0, 0]}>
             {(() => {
               const meta = algorithmsById[algoId].meta
               const bestSteps = estimateSteps(n, meta.best)
               const avgSteps = estimateSteps(n, meta.average)
               const worstSteps = estimateSteps(n, meta.worst)
+              const liveSteps = run?.metrics.steps ?? 0
+              const liveMem = run?.metrics.memoryBytes ?? 0
+              const liveH = Math.min(liveSteps / 50, 8) + 0.2
+              const liveR = 0.5 + Math.min(liveMem / 5000, 0.8)
               const items = [
-                { key: 'best', label: 'Best', steps: bestSteps, cls: meta.best, x: -2.2 },
-                { key: 'avg', label: 'Avg', steps: avgSteps, cls: meta.average, x: 0 },
-                { key: 'worst', label: 'Worst', steps: worstSteps, cls: meta.worst, x: 2.2 },
-              ]
+                { key: 'live', label: 'Live', steps: liveSteps, cls: '—', x: -3.0, r: liveR, h: liveH, live: true },
+                { key: 'best', label: 'Best', steps: bestSteps, cls: meta.best, x: -1.0 },
+                { key: 'avg', label: 'Avg', steps: avgSteps, cls: meta.average, x: 1.0 },
+                { key: 'worst', label: 'Worst', steps: worstSteps, cls: meta.worst, x: 3.0 },
+              ] as const
               return items.map((it, idx) => {
                 const h = stepsToHeight(it.steps)
                 const r = 0.5 + Math.min(it.steps / 5000, 0.8)
@@ -151,11 +136,11 @@ export default function Viewport({ run, stepIndex, algoId, n, tab, dsId, dsActio
                       <meshBasicMaterial color={'#1a1a2b'} />
                     </mesh>
                     {hovered === it.key && (
-                      <Html center style={{ pointerEvents: 'none' }}>
+                      <Html center position={[0, -0.75, 0]} style={{ pointerEvents: 'none' }}>
                         <div className="tooltip tooltip-lg tooltip-below">
                           <div className="tooltip-title">{it.label} Case</div>
                           <div>Complexity: {it.cls}</div>
-                          <div>Est. steps: {it.steps}</div>
+                          <div>Steps: {it.steps}</div>
                           <div>Visual: height ∝ steps; color = efficiency; texture = {idx === 0 ? 'smooth' : idx === 1 ? 'medium bumps' : 'spiky'}</div>
                         </div>
                       </Html>
@@ -164,34 +149,78 @@ export default function Viewport({ run, stepIndex, algoId, n, tab, dsId, dsActio
                 )
               })
             })()}
-          </group>
+              </group>
+            )
+          })()
         ) : null}
-        <OrbitControls makeDefault enableDamping dampingFactor={0.08} />
+        <ResettableOrbit resetKey={resetViewNonce} />
       </Canvas>
     </div>
   )
 }
 
-function DSPerformanceGlyph({ metrics }: { metrics?: DSMetrics }) {
+function ResettableOrbit({ resetKey }: { resetKey?: number }) {
+  const controls = React.useRef<any>(null)
+  const { camera } = useThree()
+  React.useEffect(() => {
+    if (!resetKey) return
+    if (controls.current) {
+      controls.current.reset()
+    }
+    camera.position.set(0, 6, 12)
+    camera.lookAt(0, 0, 0)
+  }, [resetKey])
+  return <OrbitControls ref={controls} makeDefault enableDamping dampingFactor={0.08} />
+}
+
+function DSPerformanceGlyph({ metrics, x = 10 }: { metrics?: DSMetrics; x?: number }) {
   const steps = metrics?.operations ?? 0
   const mem = metrics?.memoryBytes ?? 0
-  const height = Math.min(steps / 20, 8) + 0.2
-  const radius = Math.min(mem / 512, 1.4) + 0.25
-  const color = mem < 1024 ? '#6bff95' : mem < 8192 ? '#ffd166' : '#ff6b6b'
+  const count = Math.max(0, Math.round(mem / 64))
+  const height = 0.2 + Math.min(Math.sqrt(steps) * 0.6, 10)
+  const radius = 0.3 + Math.min(count / 10, 1.5)
+  // Ops/sec meter using a 2s sliding window + EMA smoothing
+  const tsRef = React.useRef<number[]>([])
+  const prevOpsRef = React.useRef<number>(steps)
+  const [opsPerSec, setOpsPerSec] = useState(0)
+  React.useEffect(() => {
+    const now = performance.now()
+    const prev = prevOpsRef.current
+    if (steps > prev) {
+      const diff = steps - prev
+      for (let i = 0; i < diff; i++) tsRef.current.push(now)
+      prevOpsRef.current = steps
+      const windowMs = 2000
+      const cutoff = now - windowMs
+      tsRef.current = tsRef.current.filter((t) => t >= cutoff)
+      const rate = (tsRef.current.length / windowMs) * 1000
+      setOpsPerSec((r) => r * 0.7 + rate * 0.3)
+    }
+  }, [steps])
+  const color = opsPerSec < 1 ? '#6bff95' : opsPerSec < 3 ? '#ffd166' : '#ff6b6b'
+  const grp = React.useRef<any>(null)
+  const t = React.useRef(0)
+  useFrame((_, dt) => {
+    t.current += dt
+    const amp = Math.min(0.12, opsPerSec / 8)
+    const s = 1 + Math.sin(t.current * 4) * amp
+    if (grp.current) grp.current.scale.set(1, s, 1)
+  })
   const [hover, setHover] = React.useState(false)
   return (
-    <group position={[10, 0, 0]} onPointerOver={() => setHover(true)} onPointerOut={() => setHover(false)}>
+    <group ref={grp} position={[x, 0, 0]} onPointerOver={() => setHover(true)} onPointerOut={() => setHover(false)}>
       <mesh position={[0, height / 2, 0]} rotation={[0, 0.35, 0]}>
-        <cylinderGeometry args={[radius, radius, height, 48, 12]} />
-        <meshStandardMaterial color={color} roughness={0.45} metalness={0.2} />
+        <cylinderGeometry args={[radius, radius, height, 56, 16]} />
+        <meshStandardMaterial color={color} roughness={0.45} metalness={0.2} emissive={color} emissiveIntensity={Math.min(0.6, opsPerSec / 5)} />
       </mesh>
       {hover && (
-        <Html center style={{ pointerEvents: 'none' }}>
+        <Html center position={[0, -0.75, 0]} style={{ pointerEvents: 'none' }}>
           <div className="tooltip tooltip-lg tooltip-below">
             <div className="tooltip-title">Structure Metrics</div>
-            <div>Operations: {steps}</div>
-            <div>Memory (approx): {mem} B</div>
-            <div>Visual: height ∝ operations; radius ∝ memory</div>
+            <div>Operations (total): {steps}</div>
+            <div>Activity: {opsPerSec.toFixed(2)} ops/sec</div>
+            <div>Size: ~{count} elements</div>
+            <div>Visual: height ∝ total ops; radius ∝ size; color/pulse ∝ activity</div>
           </div>
         </Html>
       )}
@@ -215,8 +244,6 @@ function DataStructureScene({ id, action, onDSStep }: { id: string; action?: { a
       return <HeapDS action={action} onDSStep={onDSStep} />
     case 'hash-table':
       return <HashTableDS action={action} onDSStep={onDSStep} />
-    case 'graph':
-      return <GraphDS action={action} />
     default:
       return null
   }
@@ -239,6 +266,8 @@ function ArrayDS() {
     </group>
   )
 }
+
+// TreeTraversalScene removed per request
 
 function LinkedListDS({ action }: { action?: { action: DSAction; nonce: number } }) {
   // minimal head insert/delete highlight animation
@@ -320,7 +349,7 @@ function StackDS({ action }: { action?: { action: DSAction; nonce: number } }) {
   }, [action])
 
   return (
-    <group position={[0, 0, 0]}>
+          <group position={[0, -2.0, 0]}>
       {items.map((id, i) => {
         const a = anim[id]
         const color = i === items.length - 1 ? '#ffd166' : '#6cf9e6'
@@ -483,10 +512,12 @@ function BSTDS({ action }: { action?: { action: DSAction; nonce: number } }) {
         const dx = n.x - px
         const dy = n.y - py
         const len = Math.sqrt(dx * dx + dy * dy)
-        const angle = Math.atan2(dy, dx)
+        const r = 0.3
+        const visLen = Math.max(0.001, len - 2 * r)
+        const angle = Math.atan2(dx, dy)
         return (
           <mesh key={'e' + n.idx} position={[px + dx / 2, py + dy / 2, 0]} rotation={[0, 0, angle]}>
-            <cylinderGeometry args={[0.04, 0.04, len, 8]} />
+            <cylinderGeometry args={[0.04, 0.04, visLen, 8]} />
             <meshStandardMaterial color={'#666a'} />
           </mesh>
         )
@@ -594,10 +625,12 @@ function HeapDS({ action, onDSStep }: { action?: { action: DSAction; nonce: numb
         const { x: x0, y: y0 } = idxToXY(parent)
         const dx = x1 - x0, dy = y1 - y0
         const len = Math.sqrt(dx * dx + dy * dy)
-        const angle = Math.atan2(dy, dx)
+        const r = 0.28
+        const visLen = Math.max(0.001, len - 2 * r)
+        const angle = Math.atan2(dx, dy)
         return (
           <mesh key={'e' + i} position={[x0 + dx / 2, y0 + dy / 2, 0]} rotation={[0, 0, angle]}>
-            <cylinderGeometry args={[0.04, 0.04, len, 8]} />
+            <cylinderGeometry args={[0.04, 0.04, visLen, 8]} />
             <meshStandardMaterial color={'#666a'} />
           </mesh>
         )
@@ -661,59 +694,5 @@ function HashTableDS({ action, onDSStep }: { action?: { action: DSAction; nonce:
   )
 }
 
-function GraphDS({ action }: { action?: { action: DSAction; nonce: number } }) {
-  type GNode = { id: number; x: number; y: number; color: string }
-  const [nodes, setNodes] = React.useState<GNode[]>([
-    { id: 0, x: -2, y: 0.4, color: '#6cf9e6' },
-    { id: 1, x: 0, y: 1.2, color: '#6cf9e6' },
-    { id: 2, x: 2, y: 0.4, color: '#6cf9e6' },
-  ])
-  const [edges, setEdges] = React.useState<Array<[number, number]>>([[0, 1], [1, 2]])
-  const [cursor, setCursor] = React.useState(0)
-  React.useEffect(() => {
-    if (!action) return
-    if (action.action === 'graph:addNode') {
-      setNodes((ns) => {
-        const id = ns.length ? ns[ns.length - 1].id + 1 : 0
-        const angle = (id / 8) * Math.PI * 2
-        const r = 2.4
-        return [...ns, { id, x: Math.cos(angle) * r, y: Math.sin(angle) * 0.8 + 0.6, color: '#6cf9e6' }]
-      })
-    }
-    if (action.action === 'graph:addEdge') {
-      setEdges((es) => {
-        if (nodes.length < 2) return es
-        const a = Math.floor(Math.random() * nodes.length)
-        let b = Math.floor(Math.random() * nodes.length)
-        if (a === b) b = (b + 1) % nodes.length
-        return [...es, [a, b]]
-      })
-    }
-    if (action.action === 'graph:bfsStep') {
-      setCursor((c) => (c + 1) % Math.max(1, nodes.length))
-    }
-  }, [action])
-  return (
-    <group>
-      {edges.map(([a, b], i) => {
-        const na = nodes[a], nb = nodes[b]
-        if (!na || !nb) return null
-        const dx = nb.x - na.x, dy = nb.y - na.y
-        const len = Math.sqrt(dx * dx + dy * dy)
-        const angle = Math.atan2(dy, dx)
-        return (
-          <mesh key={'ge' + i} position={[na.x + dx / 2, na.y + dy / 2, 0]} rotation={[0, 0, angle]}>
-            <cylinderGeometry args={[0.03, 0.03, len, 8]} />
-            <meshStandardMaterial color={'#666a'} />
-          </mesh>
-        )
-      })}
-      {nodes.map((n, i) => (
-        <mesh key={n.id} position={[n.x, n.y, 0]}>
-          <sphereGeometry args={[0.22, 24, 12]} />
-          <meshStandardMaterial color={i === cursor ? '#ffd166' : n.color} />
-        </mesh>
-      ))}
-    </group>
-  )
-}
+// GraphDS removed per request
+

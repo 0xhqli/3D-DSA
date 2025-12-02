@@ -48,12 +48,6 @@ export const dataStructures: DataStructureMeta[] = [
     definition: 'Maps keys to buckets using a hash function; collisions are resolved by chaining or open addressing.',
     summary: 'Average-case O(1) insert/lookup/delete with a good hash and load factor control. Worst-case O(n).',
   },
-  {
-    id: 'graph',
-    name: 'Graph',
-    definition: 'A set of vertices connected by edges (directed or undirected).',
-    summary: 'Graphs model relationships. Core ops include adding nodes/edges and traversals (BFS/DFS). BFS explores in layers; DFS goes deep first.',
-  },
 ]
 
 export const dataStructuresById = Object.fromEntries(dataStructures.map(d => [d.id, d])) as Record<string, DataStructureMeta>

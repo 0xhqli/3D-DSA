@@ -18,7 +18,7 @@ function generateArray(n: number, mode: RunConfig['input']): number[] {
       const j = Math.floor(Math.random() * (i + 1))
       ;[arr[i], arr[j]] = [arr[j], arr[i]]
     }
-  } else if (mode === 'Reversed') {
+  } else if (mode === 'Reverse') {
     arr.reverse()
   }
   return arr

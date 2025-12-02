@@ -25,16 +25,14 @@ export default function Sidebar({ tab, setTab, selectedAlgoId, onSelectAlgo, sel
         </div>
         {tab === 'Data Structures' && (
           <>
-            <ul>
-              {dataStructures.map(ds => (
-                <li key={ds.id}>
-                  <button
-                    className={"tab" + (selectedDSId === ds.id ? ' active' : '')}
-                    onClick={() => onSelectDS(ds.id)}
-                  >{ds.name}</button>
-                </li>
-              ))}
-            </ul>
+            <div className="row" style={{ marginBottom: 8 }}>
+              <label style={{ minWidth: 70 }}>Structure</label>
+              <select value={selectedDSId} onChange={(e) => onSelectDS(e.target.value)} style={{ width: '100%' }}>
+                {dataStructures.map(ds => (
+                  <option key={ds.id} value={ds.id}>{ds.name}</option>
+                ))}
+              </select>
+            </div>
             <div className="section">
               <div className="heading">About</div>
               <div className="legend" style={{ color: 'var(--text)' }}>
@@ -46,16 +44,14 @@ export default function Sidebar({ tab, setTab, selectedAlgoId, onSelectAlgo, sel
         )}
         {tab === 'Algorithms' && (
           <>
-            <ul>
-              {algorithms.map(a => (
-                <li key={a.meta.id}>
-                  <button
-                    className={"tab" + (selectedAlgoId === a.meta.id ? ' active' : '')}
-                    onClick={() => onSelectAlgo(a.meta.id)}
-                  >{a.meta.name}</button>
-                </li>
-              ))}
-            </ul>
+            <div className="row" style={{ marginBottom: 8 }}>
+              <label style={{ minWidth: 70 }}>Algorithm</label>
+              <select value={selectedAlgoId} onChange={(e) => onSelectAlgo(e.target.value)} style={{ width: '100%' }}>
+                {algorithms.map(a => (
+                  <option key={a.meta.id} value={a.meta.id}>{a.meta.name}</option>
+                ))}
+              </select>
+            </div>
             <div className="section">
               <div className="heading">About</div>
               <div className="legend" style={{ color: 'var(--text)' }}>

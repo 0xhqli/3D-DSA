@@ -87,4 +87,4 @@ Serves the built assets locally (handy for verifying deployment settings or usin
 2. Implement instrumentation + playback traces for algorithm animations.
 3. Add comparisons view with synchronized `n` sweeps and multiple glyphs.
 
-Happy exploring algorithms in 3D!
+

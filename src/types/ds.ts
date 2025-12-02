@@ -10,9 +10,6 @@ export type DSAction =
   | 'heap:extract'
   | 'hash:put'
   | 'hash:get'
-  | 'graph:addNode'
-  | 'graph:addEdge'
-  | 'graph:bfsStep'
 
 export interface DSMetrics {
   operations: number
@@ -27,9 +24,6 @@ export interface DSMetrics {
   heapExtract?: number
   hashPut?: number
   hashGet?: number
-  graphAddNode?: number
-  graphAddEdge?: number
-  graphBfsStep?: number
   memoryBytes: number
   lastAction?: string
 }

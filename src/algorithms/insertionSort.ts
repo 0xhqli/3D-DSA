@@ -20,7 +20,7 @@ export function runInsertionSort(cfg: RunConfig): RunResult {
         const j = Math.floor(Math.random() * (i + 1))
         ;[base[i], base[j]] = [base[j], base[i]]
       }
-    } else if (cfg.input === 'Reversed') base.reverse()
+    } else if (cfg.input === 'Reverse') base.reverse()
     return base
   })()
 

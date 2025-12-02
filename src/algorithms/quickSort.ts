@@ -18,7 +18,7 @@ function makeArray(n: number, mode: RunConfig['input']): number[] {
       const j = Math.floor(Math.random() * (i + 1))
       ;[base[i], base[j]] = [base[j], base[i]]
     }
-  } else if (mode === 'Reversed') base.reverse()
+  } else if (mode === 'Reverse') base.reverse()
   return base
 }
 

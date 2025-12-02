@@ -18,6 +18,8 @@ export default function App() {
   const [stepIndex, setStepIndex] = useState(0)
   const rafRef = useRef<number | null>(null)
   const [dsAction, setDSAction] = useState<{ action: DSAction; nonce: number } | null>(null)
+  const [speed, setSpeed] = useState<'Slow' | 'Normal' | 'Fast'>('Normal')
+  const [resetViewNonce, setResetViewNonce] = useState<number>(0)
   const [dsCounts, setDsCounts] = useState<Record<string, number>>({ 'array': 10, 'linked-list': 6, 'stack': 3, 'queue': 4 })
   const [dsMetrics, setDsMetrics] = useState<Record<string, DSMetrics>>({
     'array': { operations: 0, push: 0, pop: 0, enqueue: 0, dequeue: 0, insertHead: 0, deleteHead: 0, memoryBytes: 10 * 64 },
@@ -27,7 +29,6 @@ export default function App() {
     'bst': { operations: 0, push: 0, pop: 0, enqueue: 0, dequeue: 0, insertHead: 0, deleteHead: 0, bstInsert: 0, memoryBytes: 6 * 64 },
     'heap': { operations: 0, push: 0, pop: 0, enqueue: 0, dequeue: 0, insertHead: 0, deleteHead: 0, heapInsert: 0, heapExtract: 0, memoryBytes: 6 * 64 },
     'hash-table': { operations: 0, push: 0, pop: 0, enqueue: 0, dequeue: 0, insertHead: 0, deleteHead: 0, hashPut: 0, hashGet: 0, memoryBytes: 8 * 64 },
-    'graph': { operations: 0, push: 0, pop: 0, enqueue: 0, dequeue: 0, insertHead: 0, deleteHead: 0, graphAddNode: 0, graphAddEdge: 0, graphBfsStep: 0, memoryBytes: 5 * 64 },
   })
 
   const baseline = useMemo(() => {
@@ -42,9 +43,17 @@ export default function App() {
 
   useEffect(() => {
     if (!running || !result) return
+    let last = performance.now()
     const tick = () => {
+      const now = performance.now()
+      const dt = now - last
+      last = now
       setStepIndex((i) => {
-        const next = i + 1
+        let inc = 0
+        if (speed === 'Slow') inc = dt >= 32 ? 1 : 0
+        else if (speed === 'Normal') inc = dt >= 16 ? 1 : 0
+        else inc = 2
+        const next = i + inc
         if (next >= result.trace.length) {
           setRunning(false)
           return i
@@ -55,7 +64,16 @@ export default function App() {
     }
     rafRef.current = requestAnimationFrame(tick)
     return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current) }
-  }, [running, result])
+  }, [running, result, speed])
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.code === 'Space') { e.preventDefault(); setRunning(r => !r) }
+      if (e.code === 'KeyR') { e.preventDefault(); setRunning(false); setStepIndex(0); setResetViewNonce(Date.now()) }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
 
   const onRun = () => setRunning(true)
   const onPause = () => setRunning(false)
@@ -100,13 +118,6 @@ export default function App() {
         m.hashPut = (m.hashPut ?? 0) + 1; m.operations++; break
       case 'hash:get':
         m.hashGet = (m.hashGet ?? 0) + 1; m.operations++; break
-      case 'graph:addNode':
-        counts['graph'] = (counts['graph'] ?? 0) + 1
-        m.graphAddNode = (m.graphAddNode ?? 0) + 1; m.operations++; break
-      case 'graph:addEdge':
-        m.graphAddEdge = (m.graphAddEdge ?? 0) + 1; m.operations++; break
-      case 'graph:bfsStep':
-        m.graphBfsStep = (m.graphBfsStep ?? 0) + 1; m.operations++; break
       default:
         break
     }
@@ -117,8 +128,7 @@ export default function App() {
       : (id === 'queue') ? (counts['queue'] ?? 0)
       : (id === 'bst') ? (counts['bst'] ?? 0)
       : (id === 'heap') ? (counts['heap'] ?? 0)
-      : (id === 'hash-table') ? (counts['hash-table'] ?? 0)
-      : (id === 'graph') ? (counts['graph'] ?? 0) : 0
+      : (id === 'hash-table') ? (counts['hash-table'] ?? 0) : 0
     m.memoryBytes = size * 64
     m.lastAction = action
     metrics[id] = m
@@ -144,6 +154,9 @@ export default function App() {
         onRun={onRun}
         onPause={onPause}
         onReset={onReset}
+        speed={speed}
+        onSpeed={setSpeed}
+        onResetView={() => setResetViewNonce(Date.now())}
       />
       <Viewport
         run={result}
@@ -161,6 +174,7 @@ export default function App() {
           })
         }}
         dsMetrics={dsMetrics[selectedDSId]}
+        resetViewNonce={resetViewNonce}
       />
       <MetricsPanel
         metrics={result?.metrics ?? null}

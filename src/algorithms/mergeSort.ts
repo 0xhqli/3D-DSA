@@ -18,7 +18,7 @@ function arrayFor(n: number, mode: RunConfig['input']) {
       const j = Math.floor(Math.random() * (i + 1))
       ;[a[i], a[j]] = [a[j], a[i]]
     }
-  } else if (mode === 'Reversed') a.reverse()
+  } else if (mode === 'Reverse') a.reverse()
   return a
 }
 
