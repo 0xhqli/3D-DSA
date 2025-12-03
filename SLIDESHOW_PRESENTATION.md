@@ -29,24 +29,22 @@
 
 ---
 
-## Slide 3: Program Architecture & Tech Stack
+## Slide 3: Technology Overview
 
-### Built on Modern Web Technologies
+### Modern Web Platform for Interactive Learning
 
-**Frontend Framework:**
-- **React 18** with TypeScript for type-safe component architecture
-- Functional components with hooks for state management
+**Built With:**
+- **React + TypeScript** - Modern web framework for responsive interfaces
+- **Three.js** - Powerful 3D graphics engine for smooth animations
+- **Browser-Based** - No installation required, runs entirely in your web browser
 
-**3D Graphics Engine:**
-- **Three.js** via React Three Fiber for declarative 3D scene composition
-- **@react-three/drei** for camera controls and 3D helpers
-- Real-time rendering with WebGL
+**Key Capabilities:**
+- Real-time 3D rendering at 60 frames per second
+- Interactive camera controls (orbit, zoom, pan)
+- Client-side data storage for saving your work
+- Works offline after initial page load
 
-**Build System:**
-- **Vite 5** for lightning-fast development and optimized production builds
-- Hot module replacement for instant feedback during development
-
-**[SCREENSHOT: Code editor showing TypeScript interfaces and React components]**
+**[SCREENSHOT: Application running in browser showing smooth 3D animations]**
 
 ---
 
@@ -233,154 +231,83 @@ The program maps abstract performance metrics to concrete 3D properties:
 
 ---
 
-## Slide 10: Instrumentation & Trace System
+## Slide 10: How Performance is Measured
 
-### How Algorithms Are Measured
+### Real-Time Algorithm Tracking
 
-**TypeScript Instrumentation Layer:**
+**What Gets Measured:**
+- **Steps** - Total operations performed
+- **Comparisons** - How many times elements are compared
+- **Swaps** - How many times elements change positions
+- **Memory** - Approximate space used during execution
 
-Each algorithm implementation includes embedded measurement:
+**Animation System:**
+- Every algorithm step is recorded as it happens
+- Playback shows exactly how the algorithm makes decisions
+- Speed controls let you slow down or speed up the visualization
+- See the algorithm "think" in real-time
 
-```typescript
-interface RunResult {
-  metrics: RunMetrics    // Quantitative measurements
-  trace: TraceStep[]     // Step-by-step execution history
-}
+**Educational Value:**
+- Understand *why* some algorithms are slower than others
+- See the difference between best-case and worst-case scenarios
+- Compare algorithm efficiency with actual numbers
 
-interface RunMetrics {
-  steps: number          // Total operations
-  comparisons: number    // Comparison operations
-  swaps: number         // Swap operations
-  memoryBytes: number   // Approximate memory usage
-}
-
-interface TraceStep {
-  type: 'compare' | 'swap' | 'set'
-  i?: number           // First index
-  j?: number           // Second index
-  array: number[]      // Array state at this step
-}
-```
-
-**Animation Playback:**
-- Trace steps drive 3D animations
-- Speed controls: Slow (32ms), Normal (16ms), Fast (2 steps/frame)
-- Step-by-step visualization of algorithm execution
-
-**[SCREENSHOT: Code showing instrumented bubble sort algorithm]**
+**[SCREENSHOT: Metrics panel showing live operation counts during algorithm execution]**
 
 ---
 
-## Slide 11: Interactive Features & Controls
+## Slide 11: User Features & Data Management
 
-### User Experience Design
+### Interactive Controls and Data Persistence
 
-**Keyboard Shortcuts:**
-- **Space:** Play/Pause animation
-- **R:** Reset to initial state
+**How You Control the Experience:**
 
-**Configuration Options:**
-- Input size (n) adjustable via slider
-- Input distribution: Random, Sorted, Reverse
-- Speed controls for animation playback
-- Camera controls: Orbit, zoom, pan, reset view
+**Playback Controls:**
+- Input size slider - Adjust from small to large datasets
+- Distribution selector - Random, Sorted, or Reversed data
+- Speed controls - Slow, Normal, or Fast animation
+- Play/Pause/Reset buttons - Full control over execution
+- Keyboard shortcuts - Space (play/pause), R (reset)
 
-**Settings & Persistence:**
-- Preset configurations for quick testing
-- Run history tracking with metrics
-- Export/import capability for sharing configurations
+**3D Camera:**
+- Orbit, zoom, and pan around the visualization
+- Reset view button to return to starting position
+- Smooth, intuitive controls
 
-**Real-time Feedback:**
-- Metrics update during algorithm execution
-- Visual highlighting of active elements
-- Smooth animations for operations
+**Save Your Work:**
 
-**Dark Theme UI:**
-- Background: #050509 (near-black)
-- Vibrant neon accents for algorithms
-- Glassmorphism effects on panels
-- High contrast for readability
+**Presets** - Save your favorite configurations for quick access
+- Custom algorithm setups with specific input sizes
+- Quick testing of different scenarios
 
-**[SCREENSHOT: Settings modal showing presets, history, and export features]**
+**Run History** - Automatic tracking of performance
+- Last 10 algorithm runs saved automatically
+- Compare performance across different configurations
+- Review metrics from previous experiments
 
----
+**Export Your Data:**
 
-## Slide 12: Data Storage & Persistence
+**CSV Export** - Download performance data for analysis
+- Open in Excel, Google Sheets, or any spreadsheet program
+- Perfect for homework, research papers, or presentations
+- Includes: algorithm name, input size, steps, comparisons, memory usage
 
-### Long-term Data Management
+**JSON Export/Import** - Backup and share configurations
+- Save all your presets and history
+- Share setups with classmates
+- No login or cloud storage required - fully private
 
-**Storage Technology: Browser LocalStorage**
+**Privacy-First Design:**
+- All data stored in your browser (LocalStorage)
+- No external databases or APIs
+- No user accounts needed
+- Works completely offline
 
-The program implements client-side persistent storage using the browser's LocalStorage API, allowing users to save their work across sessions without requiring a backend server or database.
-
-**Three Storage Categories:**
-
-**1. Presets** (Custom Configurations)
-- Save favorite algorithm configurations
-- Store algorithm ID, input size, and input type
-- Quick access to commonly used test scenarios
-- Format: JSON objects in localStorage
-- Key: `3d-dsa-presets`
-
-**2. Run History** (Performance Tracking)
-- Automatically records completed algorithm runs
-- Captures metrics: steps, comparisons, swaps, memory usage
-- Stores last 10 runs for quick comparison
-- Format: JSON array in localStorage
-- Key: `3d-dsa-history`
-
-**3. User Settings** (Preferences)
-- Default playback speed (Slow/Normal/Fast)
-- Default input size
-- Format: JSON object in localStorage
-- Key: `3d-dsa-settings`
-
-**Export Capabilities:**
-
-**CSV Export** (`.csv` files)
-- Export run history to CSV format
-- Columns: Timestamp, Algorithm, Input Size, Input Type, Steps, Comparisons, Swaps, Memory
-- Perfect for importing into Excel, Google Sheets, or data analysis tools
-- Use case: Academic research, performance comparisons, report generation
-
-**JSON Export/Import** (`.json` files)
-- Full backup of presets and history
-- Human-readable JSON format with proper indentation
-- Import capability for restoring data or sharing configurations
-- Use case: Backup, migration between browsers, sharing setups with classmates
-
-**Data Structure:**
-```typescript
-interface SavedPreset {
-  id: string
-  name: string
-  algorithmId: string
-  config: RunConfig
-  timestamp: number
-}
-
-interface HistoryEntry {
-  id: string
-  algorithmId: string
-  algorithmName: string
-  config: RunConfig
-  metrics: { steps, comparisons, swaps, memoryBytes }
-  timestamp: number
-}
-```
-
-**No External Dependencies:**
-- ✅ No SQL databases required
-- ✅ No backend API calls
-- ✅ No user authentication needed
-- ✅ Fully client-side, privacy-focused
-- ✅ Works offline after initial load
-
-**[SCREENSHOT: Export modal showing CSV and JSON export options with sample data]**
+**[SCREENSHOT: Settings modal showing presets, history tabs, and export buttons]**
 
 ---
 
-## Slide 13: Learning Outcomes & Future Development
+## Slide 12: Learning Outcomes & Future Development
 
 ### Educational Impact
 
@@ -428,13 +355,11 @@ interface HistoryEntry {
 
 **Slide 9:** This is the core innovation - demonstrate how color, height, and size communicate complexity.
 
-**Slide 10:** Show actual code to demonstrate this is a real, working implementation with proper instrumentation.
+**Slide 10:** Explain how metrics are captured in real-time, showing the live counter updates during algorithm execution.
 
-**Slide 11:** Do a live demo of changing parameters and watching algorithm behavior change.
+**Slide 11:** Do a live demo - change input size, run an algorithm, save a preset, and export the data to CSV. Show how easy it is to track and share your work. Emphasize privacy: no login, no cloud, all data stays in your browser.
 
-**Slide 12:** Demonstrate the export feature - show how to download CSV data and open it in Excel. Emphasize that no server or database is needed - everything runs in the browser.
-
-**Slide 13:** Conclude with the educational mission and invite questions.
+**Slide 12:** Conclude with the educational mission and invite questions.
 
 ---
 
@@ -442,19 +367,17 @@ interface HistoryEntry {
 
 To complete this presentation, capture the following screenshots:
 
-- [ ] Landing page with 3D viewport
-- [ ] Full interface with all panels visible and labeled
-- [ ] Code editor showing TypeScript components
-- [ ] Data Structures tab menu
-- [ ] Multiple data structure visualizations (Array, Stack, Queue, BST)
-- [ ] Bubble Sort animation in progress
-- [ ] Binary Search showing search space reduction
-- [ ] Performance metrics panel with color-coded complexity
-- [ ] Instrumented algorithm source code
-- [ ] Settings modal with presets and history
-- [ ] Export modal showing CSV and JSON export options with sample data
-- [ ] Browser developer tools showing localStorage data (optional but helpful)
-- [ ] Downloaded CSV file opened in Excel/Sheets showing algorithm metrics
+- [ ] Landing page with 3D viewport showing an algorithm in action
+- [ ] Full interface with all four panels visible and labeled
+- [ ] Application running in browser (show URL bar to emphasize web-based)
+- [ ] Data Structures tab with menu visible
+- [ ] Multiple data structure visualizations (Array, Stack, Queue, BST in 3D)
+- [ ] Sorting algorithm animation in progress (Bubble or Merge Sort)
+- [ ] Binary Search showing the halving process
+- [ ] Performance metrics panel showing color-coded complexity glyphs
+- [ ] Metrics panel with live counters during algorithm execution
+- [ ] Settings modal with presets and history tabs visible
+- [ ] CSV file exported and opened in Excel/Google Sheets showing algorithm data
 - [ ] (Optional) Comparison view if implemented
 
 ---
