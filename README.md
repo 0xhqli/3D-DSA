@@ -2,13 +2,12 @@
 
 ## Presentation Slides: 
 ## Slideshow version 2: 3D-DSA: Visualizing Data Structures & Algorithms https://docs.google.com/presentation/d/1xFwwt4iSb4ZBJQCOJlbj7alQ8WKW__NhpKZxgKO_0Sc/edit?usp=sharing
-## Version 1: https://docs.google.com/presentation/d/1P0FRXt-9_MyoCqpUYlC9fZlXCyhMwkLFSTTtK_XFrWk/edit?usp=sharing
 
 A dark-themed, React + Three.js playground for visualizing classic data structures and algorithms (DSA) as immersive 3D scenes. The experience highlights performance characteristics (time, space, complexity class) through animated glyphs so learners can *see* how algorithms behave.
 
 ## Features
 
-### 🎯 Algorithms & Data Structures
+### Algorithms & Data Structures
 
 **8 Sorting & Searching Algorithms:**
 - Bubble Sort, Selection Sort, Insertion Sort
@@ -25,7 +24,7 @@ A dark-themed, React + Three.js playground for visualizing classic data structur
 - Binary Heap - Complete binary tree with sift-up/sift-down animations
 - Hash Table - Grid of buckets with collision chain visualization
 
-### 💾 Data Persistence & Management
+### Data Persistence & Management
 
 **Save & Load Presets:**
 - Save algorithm configurations with custom names
@@ -42,7 +41,7 @@ A dark-themed, React + Three.js playground for visualizing classic data structur
 - Save default input size preferences
 - All settings persist using browser localStorage
 
-### 📤 Export & Import
+### Export & Import
 
 **Export Capabilities:**
 - **CSV Export**: Run history data for analysis in Excel or data tools
@@ -57,7 +56,7 @@ A dark-themed, React + Three.js playground for visualizing classic data structur
   - Merge imported presets with existing ones
   - Seamless configuration sharing between sessions
 
-### 🎨 3D Visualization Features
+### 3D Visualization Features
 
 **Performance Glyph Encoding:**
 - **Height** = Operation count / time complexity
@@ -74,7 +73,7 @@ A dark-themed, React + Three.js playground for visualizing classic data structur
 - Hover tooltips showing detailed metrics
 - Real-time animation playback with speed controls
 
-### 📊 Real-time Metrics
+### Real-time Metrics
 
 **Algorithm Metrics:**
 - Steps (total operations executed)
@@ -170,7 +169,7 @@ Serves the built assets locally (handy for verifying deployment settings or usin
 
 ## Current Status
 
-✅ **Completed:**
+**Completed:**
 - 8 algorithms with full instrumentation and playback
 - 7 interactive data structures with animated operations
 - Data persistence (presets, history, settings)
@@ -179,7 +178,7 @@ Serves the built assets locally (handy for verifying deployment settings or usin
 - 3D performance glyph encoding
 - Dark-themed responsive UI
 
-🚧 **In Progress / Future Enhancements:**
+**In Progress / Future Enhancements:**
 - Comparisons view with synchronized `n` sweeps and multiple glyphs
 - Additional sorting algorithms (Radix Sort, Counting Sort, Shell Sort)
 - Graph data structures (directed/undirected graphs with BFS/DFS)

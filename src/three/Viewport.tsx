@@ -389,33 +389,37 @@ function StackDS({ action }: { action?: { action: DSAction; nonce: number } }) {
 }
 
 function QueueDS({ action }: { action?: { action: DSAction; nonce: number } }) {
-  const width = 0.8
-  const [items, setItems] = React.useState<number[]>([0, 1, 2, 3])
+  const width = 0.8 // logical spacing between queue nodes so each cube sits edge-to-edge
+  const [items, setItems] = React.useState<number[]>([0, 1, 2, 3]) // list of node IDs in FIFO order
   const [pos, setPos] = React.useState<Record<number, { x: number; targetX: number; removing?: boolean }>>({
+    // track each node's current x position plus where it *should* end up after animations
     0: { x: 0 * width, targetX: 0 * width },
     1: { x: 1 * width, targetX: 1 * width },
     2: { x: 2 * width, targetX: 2 * width },
     3: { x: 3 * width, targetX: 3 * width },
   })
-  const speed = 3
+  const speed = 3 // movement speed (world units / second) for easing toward target slots
   useFrame((_, dt) => {
+    // run every frame to smoothly interpolate each cube toward its desired position
     setPos((prev) => {
       const next: typeof prev = { ...prev }
       let changed = false
       for (const k of Object.keys(prev)) {
         const id = Number(k)
         const a = prev[id]
-        if (!a) continue
-        const dx = a.targetX - a.x
+        if (!a) continue // defensive: skip entries that were removed mid-loop
+        const dx = a.targetX - a.x // remaining distance to desired slot
         if (Math.abs(dx) > 0.01) {
+          // incrementally slide node toward its target slot using delta-time aware easing
           a.x += Math.sign(dx) * Math.min(Math.abs(dx), speed * dt)
           changed = true
         } else if (a.removing) {
+          // once a dequeued node finished sliding past the front, purge it from state
           delete next[id]
           changed = true
         }
       }
-      return changed ? { ...next } : prev
+      return changed ? { ...next } : prev // only update state if something actually moved/removed
     })
   })
 
