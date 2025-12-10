@@ -161,12 +161,6 @@ Serves the built assets locally (handy for verifying deployment settings or usin
 ├── vite.config.ts
 └── package.json
 ```
-
-## Developer Notes
-
-- Use `# TODO:` comments to track follow-ups and `# REVIEW:` when another agent/human should double-check logic, per project conventions.
-- Each new feature or bugfix should also update `plans.md`, `tasks.md`, and `log.md` accordingly.
-
 ## Current Status
 
 **Completed:**
